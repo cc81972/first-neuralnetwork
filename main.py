@@ -38,7 +38,7 @@ def init_paramters(): #Main function to initialize all the parameters
     return W1, b1, W2, b2
 
 def ReLU(Z): #This is our ReLU activation function
-    return np.maximum(0,Z)
+    return np.maximum(Z, 0)
 
 def softmax(Z): #This is our softmax activation function
     return np.exp(Z) / np.sum(np.exp(Z))
@@ -59,15 +59,15 @@ def one_hot(Y): #One hot encoding our Y matrix
 def deriv_ReLU(Z): #Taking the derivative of our RelU function
     return Z > 0 #If Z > 0, will return as 1 which is the slope of our ReLU function
 
-def back_prop(Z1, A1, Z2, A2, W2, Y): #Main back propogation function
+def back_prop(Z1, A1, Z2, A2, W1, W2, X, Y): #Main back propogation function
     m = Y.size
     one_hot_Y = one_hot(Y)
     dZ2 = A2 - one_hot_Y
-    dW2 = 1/m *dZ2.dot(A1.T)
-    dB2 = 1/m * np.sum
+    dW2 = 1/m * dZ2.dot(A1.T)
+    dB2 = 1/m * np.sum(dZ2)
     dZ1 = W2.T.dot(dZ2) * deriv_ReLU(Z1)
     dW1 = 1/m * dZ2.dot(X.T)
-    db1 = 1/m * np.sum(dZ2, 2)
+    db1 = 1/m * np.sum(dZ1)
     return dW1, db1, dW2, dB2
 
 def update_params(W1, b1, W2, b2, dW1, db1, dW2, db2, alpha):
@@ -88,7 +88,7 @@ def gradient_descent(X, Y, iter, alpha):
     W1, b1, W2, b2 = init_paramters()
     for i in range(iter):
         Z1, A1, Z2, A2 = foward_prop(W1, b1, W2, b2, X)
-        dW1, db1, dW2, db2 = back_prop(Z1, A1, Z2, A2, W2, X, Y)
+        dW1, db1, dW2, db2 = back_prop(Z1, A1, Z2, A2, W1, W2, X, Y)
         W1, b1, W2, b2 = update_params(W1, b1, W2, b2, dW1, db1, dW2, db2, alpha)
         if (i % 10 == 0):
             print("Iteration: ", i)
