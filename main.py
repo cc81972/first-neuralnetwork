@@ -27,6 +27,8 @@ X_dev = data_dev[1:n]
 data_train = data[1000:m].T #Data that will be used in training
 Y_train = data_train[0]
 X_train = data_train[1:n]
+X_train = X_train / 255
+_,m_train = X_train.shape
 
 
 def init_paramters(): #Main function to initialize all the parameters
@@ -41,7 +43,8 @@ def ReLU(Z): #This is our ReLU activation function
     return np.maximum(Z, 0)
 
 def softmax(Z): #This is our softmax activation function
-    return np.exp(Z) / np.sum(np.exp(Z))
+    A = np.exp(Z) / sum(np.exp(Z))
+    return A
 
 def foward_prop(W1,b1,W2,b2,X): #Foward propogation function
     Z1 = W1.dot(X) + b1
@@ -60,15 +63,14 @@ def deriv_ReLU(Z): #Taking the derivative of our RelU function
     return Z > 0 #If Z > 0, will return as 1 which is the slope of our ReLU function
 
 def back_prop(Z1, A1, Z2, A2, W1, W2, X, Y): #Main back propogation function
-    m = Y.size
     one_hot_Y = one_hot(Y)
     dZ2 = A2 - one_hot_Y
     dW2 = 1/m * dZ2.dot(A1.T)
-    dB2 = 1/m * np.sum(dZ2)
+    db2 = 1/m * np.sum(dZ2)
     dZ1 = W2.T.dot(dZ2) * deriv_ReLU(Z1)
-    dW1 = 1/m * dZ2.dot(X.T)
+    dW1 = 1/m * dZ1.dot(X.T)
     db1 = 1/m * np.sum(dZ1)
-    return dW1, db1, dW2, dB2
+    return dW1, db1, dW2, db2
 
 def update_params(W1, b1, W2, b2, dW1, db1, dW2, db2, alpha):
     W1 = W1 - alpha * dW1
@@ -84,7 +86,7 @@ def get_accuracy(predictions, Y):
     print(predictions, Y)
     return np.sum(predictions == Y) / Y.size
 
-def gradient_descent(X, Y, iter, alpha):
+def gradient_descent(X, Y, alpha, iter):
     W1, b1, W2, b2 = init_paramters()
     for i in range(iter):
         Z1, A1, Z2, A2 = foward_prop(W1, b1, W2, b2, X)
@@ -92,8 +94,9 @@ def gradient_descent(X, Y, iter, alpha):
         W1, b1, W2, b2 = update_params(W1, b1, W2, b2, dW1, db1, dW2, db2, alpha)
         if (i % 10 == 0):
             print("Iteration: ", i)
-            print("Accuracy: ", get_accuracy(get_predicitons(A2), Y))
+            predictions = get_predicitons(A2)
+            print("Accuracy: ", get_accuracy(predictions, Y))
     return W1, b1, W2, b2
 
-W1, b1, W2, b2 = gradient_descent(X_train, Y_train, 500, 0.1)
+W1, b1, W2, b2 = gradient_descent(X_train, Y_train, 0.10, 500)
 
